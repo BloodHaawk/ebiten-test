@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"math"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -38,44 +39,16 @@ func (spr sprite) moveSprite(sprSize, speed float64) translationVector {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		switch {
-		case spr.opts.GeoM.Element(0, 2) < windowWidth-sprSize-speed:
-			matrix.tx = speed
-		case spr.opts.GeoM.Element(0, 2) < windowWidth-sprSize:
-			matrix.tx = windowWidth - spr.opts.GeoM.Element(0, 2) - sprSize
-		default:
-			matrix.tx = 0
-		}
+		matrix.tx = math.Min(windowWidth-sprSize-spr.opts.GeoM.Element(0, 2), speed)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		switch {
-		case spr.opts.GeoM.Element(0, 2) < speed:
-			matrix.tx = 0 - spr.opts.GeoM.Element(0, 2)
-		case spr.opts.GeoM.Element(0, 2) > 0:
-			matrix.tx = 0 - speed
-		default:
-			matrix.tx = 0
-		}
+		matrix.tx = -math.Min(spr.opts.GeoM.Element(0, 2), speed)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		switch {
-		case spr.opts.GeoM.Element(1, 2) < windowHeight-sprSize-speed:
-			matrix.ty = speed
-		case spr.opts.GeoM.Element(1, 2) < windowHeight-sprSize:
-			matrix.ty = windowHeight - spr.opts.GeoM.Element(1, 2) - sprSize
-		default:
-			matrix.ty = 0
-		}
+		matrix.ty = math.Min(windowWidth-sprSize-spr.opts.GeoM.Element(1, 2), speed)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		switch {
-		case spr.opts.GeoM.Element(1, 2) < speed:
-			matrix.ty = 0 - spr.opts.GeoM.Element(1, 2)
-		case spr.opts.GeoM.Element(1, 2) > 0:
-			matrix.ty = 0 - speed
-		default:
-			matrix.tx = 0
-		}
+		matrix.ty = -math.Min(spr.opts.GeoM.Element(1, 2), speed)
 	}
 	return matrix
 }
@@ -86,17 +59,18 @@ var hitBox = sprite{}
 // Display the square
 func update(screen *ebiten.Image) error {
 
-	if square.image == nil {
-		square.image, _ = ebiten.NewImage(squareSize, squareSize, ebiten.FilterNearest)
-	}
 	if hitBox.image == nil {
 		hitBox.image, _ = ebiten.NewImage(hitBoxSize, hitBoxSize, ebiten.FilterNearest)
-		hitBox.opts.GeoM.Translate((squareSize-hitBoxSize)/2, (squareSize-hitBoxSize)/2)
 	}
+	if square.image == nil {
+		square.image, _ = ebiten.NewImage(squareSize, squareSize, ebiten.FilterNearest)
+		square.opts.GeoM.Translate((hitBoxSize-squareSize)/2, (hitBoxSize-squareSize)/2)
+	}
+
+	trans := hitBox.moveSprite(hitBoxSize, mvtSpeed)
 
 	// Draw the square and update the position from keyboard input
 	square.image.Fill(color.White)
-	trans := square.moveSprite(squareSize, mvtSpeed)
 	square.opts.GeoM.Translate(trans.tx, trans.ty)
 	screen.DrawImage(square.image, &square.opts)
 	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("X: %f, Y: %f", square.opts.GeoM.Element(0, 2), square.opts.GeoM.Element(1, 2)), 40, 40)
