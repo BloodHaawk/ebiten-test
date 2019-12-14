@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image/color"
+	"log"
 	"math"
 
 	"github.com/hajimehoshi/ebiten"
@@ -19,77 +20,94 @@ const (
 	mvtSpeed   = 3
 )
 
-type translationVector struct {
-	tx, ty float64
-}
-
 // Basic sprite with options
 type sprite struct {
 	image *ebiten.Image
 	opts  ebiten.DrawImageOptions
 }
 
-// Move a sprite from keyboard inputs (use Shift to slow down)
-func (spr sprite) moveSprite(sprSize, speed float64) translationVector {
-	matrix := translationVector{}
+// Player struct
+type player struct {
+	skin   sprite
+	hitBox sprite
+}
 
+// Display the square
+func update(screen *ebiten.Image, p *player) error {
+
+	tx, ty := p.hitBox.moveSprite(hitBoxSize, mvtSpeed)
+	p.skin.opts.GeoM.Translate(tx, ty)
+	p.hitBox.opts.GeoM.Translate(tx, ty)
+
+	// Draw the square and update the position from keyboard input
+	drawSprite(screen, p.skin, color.White)
+
+	// Show the hitBox in red when pressing Shift
+	if ebiten.IsKeyPressed(ebiten.KeyShift) {
+		drawSprite(screen, p.hitBox, color.RGBA{0xff, 0x00, 0x00, 0xff})
+	}
+
+	debugPlayer(screen, p)
+
+	return nil
+}
+
+// Move a sprite from keyboard inputs (use Shift to slow down)
+func (spr sprite) moveSprite(sprSize, speed float64) (tx, ty float64) {
 	// Use Shift to slow down
 	if ebiten.IsKeyPressed(ebiten.KeyShift) {
 		speed = speed / 2
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		matrix.tx = math.Min(windowWidth-sprSize-spr.opts.GeoM.Element(0, 2), speed)
+		tx = math.Min(windowWidth-sprSize-spr.opts.GeoM.Element(0, 2), speed)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		matrix.tx = -math.Min(spr.opts.GeoM.Element(0, 2), speed)
+		tx = -math.Min(spr.opts.GeoM.Element(0, 2), speed)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		matrix.ty = math.Min(windowWidth-sprSize-spr.opts.GeoM.Element(1, 2), speed)
+		ty = math.Min(windowWidth-sprSize-spr.opts.GeoM.Element(1, 2), speed)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		matrix.ty = -math.Min(spr.opts.GeoM.Element(1, 2), speed)
+		ty = -math.Min(spr.opts.GeoM.Element(1, 2), speed)
 	}
-	return matrix
+	return
 }
 
-var square = sprite{}
-var hitBox = sprite{}
+func drawSprite(screen *ebiten.Image, spr sprite, clr color.Color) {
+	spr.image.Fill(clr)
+	screen.DrawImage(spr.image, &spr.opts)
+}
 
-// Display the square
-func update(screen *ebiten.Image) error {
+func debugPlayer(screen *ebiten.Image, p *player) {
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("X: %f, Y: %f", p.skin.opts.GeoM.Element(0, 2), p.skin.opts.GeoM.Element(1, 2)), 40, 40)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("X: %f, Y: %f", p.hitBox.opts.GeoM.Element(0, 2), p.hitBox.opts.GeoM.Element(1, 2)), 40, 80)
+}
 
-	if hitBox.image == nil {
-		hitBox.image, _ = ebiten.NewImage(hitBoxSize, hitBoxSize, ebiten.FilterNearest)
-	}
-	if square.image == nil {
-		square.image, _ = ebiten.NewImage(squareSize, squareSize, ebiten.FilterNearest)
-		square.opts.GeoM.Translate((hitBoxSize-squareSize)/2, (hitBoxSize-squareSize)/2)
-	}
+func initPlayer() player {
+	var p player
+	var errH, errS error
+	p.hitBox.image, errH = ebiten.NewImage(hitBoxSize, hitBoxSize, ebiten.FilterNearest)
+	p.skin.image, errS = ebiten.NewImage(squareSize, squareSize, ebiten.FilterNearest)
+	logError(errH)
+	logError(errS)
+	p.skin.opts.GeoM.Translate((hitBoxSize-squareSize)/2, (hitBoxSize-squareSize)/2)
 
-	trans := hitBox.moveSprite(hitBoxSize, mvtSpeed)
-
-	// Draw the square and update the position from keyboard input
-	square.image.Fill(color.White)
-	square.opts.GeoM.Translate(trans.tx, trans.ty)
-	screen.DrawImage(square.image, &square.opts)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("X: %f, Y: %f", square.opts.GeoM.Element(0, 2), square.opts.GeoM.Element(1, 2)), 40, 40)
-
-	// Show the hitBox in red when pressing Shitf
-	hitBox.image.Fill(color.RGBA{0xff, 0x00, 0x00, 0xff})
-	hitBox.opts.GeoM.Translate(trans.tx, trans.ty)
-	ebitenutil.DebugPrintAt(screen, fmt.Sprintf("X: %f, Y: %f", hitBox.opts.GeoM.Element(0, 2), hitBox.opts.GeoM.Element(1, 2)), 40, 80)
-
-	if ebiten.IsKeyPressed(ebiten.KeyShift) {
-		screen.DrawImage(hitBox.image, &hitBox.opts)
-	}
-
-	return nil
+	return p
 }
 
 // Initialise Ebiten, then loop the update function
 func main() {
-	if err := ebiten.Run(update, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
+
+	p := initPlayer()
+
+	if err := ebiten.Run(func(screen *ebiten.Image) error { return update(screen, &p) }, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
 		panic(err)
+	}
+}
+
+func logError(err error) {
+	if err != nil {
+		log.Fatal(err)
 	}
 }
