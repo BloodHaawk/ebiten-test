@@ -22,6 +22,7 @@ const (
 	maxPlayerBullets  = 1000
 	playerBulletSize  = 2
 	playerBulletSpeed = 5
+	playerBulletFreq  = 60
 )
 
 // Basic sprite with options
@@ -39,9 +40,10 @@ func (spr sprite) y() float64 {
 
 // Player struct
 type player struct {
-	skin    sprite
-	hitBox  sprite
-	bullets []bullet
+	skin          sprite
+	hitBox        sprite
+	bullets       []bullet
+	lastShotFrame int
 }
 
 // Bullet type
@@ -52,6 +54,8 @@ type bullet struct {
 
 var bulletSkin *ebiten.Image
 var bulletSprite sprite
+
+var frameCounter int
 
 // Display the square
 func update(screen *ebiten.Image, p *player) error {
@@ -68,12 +72,12 @@ func update(screen *ebiten.Image, p *player) error {
 
 	// Shoot a bullet with SpaceBar
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		p.shootBullet(screen)
+		p.shootBullet(playerBulletFreq)
 	}
 
 	for i := range p.bullets {
 		if p.bullets[i].isOnScreen {
-			p.bullets[i].move(playerBulletSpeed)
+			p.bullets[i].move(playerBulletSpeed, playerBulletSize)
 			bulletSprite.opts.GeoM.Reset()
 			bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, bulletSprite)
@@ -84,6 +88,8 @@ func update(screen *ebiten.Image, p *player) error {
 FPS: %0.2f
 `, ebiten.CurrentTPS(), ebiten.CurrentFPS())
 	ebitenutil.DebugPrint(screen, msg)
+
+	frameCounter++
 
 	return nil
 }
@@ -115,20 +121,23 @@ func (p *player) move(speed float64) {
 	return
 }
 
-func (p *player) shootBullet(screen *ebiten.Image) {
-	for i := range p.bullets {
-		if !p.bullets[i].isOnScreen {
-			p.bullets[i].x = p.hitBox.x()
-			p.bullets[i].y = p.hitBox.y() - 10
-			p.bullets[i].isOnScreen = true
-			break
+func (p *player) shootBullet(freq int) {
+	if frameCounter-p.lastShotFrame >= ebiten.MaxTPS()/playerBulletFreq {
+		for i := range p.bullets {
+			if !p.bullets[i].isOnScreen {
+				p.bullets[i].x = p.hitBox.x() - (playerBulletSize-hitBoxSize)/2
+				p.bullets[i].y = p.hitBox.y() - 10
+				p.bullets[i].isOnScreen = true
+				break
+			}
 		}
+		p.lastShotFrame = frameCounter
 	}
 }
 
-func (b *bullet) move(speed float64) {
+func (b *bullet) move(speed, size float64) {
 	b.y = b.y - speed
-	if b.y < 0 {
+	if b.y+size < 0 {
 		b.isOnScreen = false
 	}
 }
