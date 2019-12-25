@@ -7,20 +7,6 @@ import (
 	"github.com/hajimehoshi/ebiten"
 )
 
-const (
-	squareSize = 8
-	hitBoxSize = 2
-	mvtSpeed   = 3
-
-	maxPlayerBullets  = 1000
-	playerBulletSize  = 3
-	playerBulletSpeed = 5
-	playerBulletFreq  = 60
-	baseBulletSpread  = 100 //degrees
-	focusBulletSpread = 90  //degrees
-	bulletStreams     = 9
-)
-
 // Player struct
 type player struct {
 	skin          sprite
@@ -30,10 +16,21 @@ type player struct {
 	bulletSprite  sprite
 	lastShotFrame int
 	isFocus       bool
+
+	skinSize   int
+	hitBoxSize int
+	mvtSpeed   float64
+
+	bulletSize        int
+	bulletSpeed       float64
+	bulletFreq        int
+	baseBulletSpread  float64 //degrees
+	focusBulletSpread float64 //degrees
+	bulletStreams     int
 }
 
 func (p *player) update(screen *ebiten.Image) {
-	p.move(mvtSpeed)
+	p.move(p.mvtSpeed)
 
 	// Draw the square and update the position from keyboard input
 	drawSprite(screen, p.skin)
@@ -49,9 +46,9 @@ func (p *player) update(screen *ebiten.Image) {
 	// Shoot a bullet with Z key
 	if ebiten.IsKeyPressed(ebiten.KeyZ) {
 		if p.isFocus {
-			p.shootBullet(playerBulletFreq, bulletStreams, focusBulletSpread)
+			p.shootBullet(p.bulletFreq, p.bulletStreams, p.focusBulletSpread)
 		} else {
-			p.shootBullet(playerBulletFreq, bulletStreams, baseBulletSpread)
+			p.shootBullet(p.bulletFreq, p.bulletStreams, p.baseBulletSpread)
 		}
 	}
 
@@ -60,7 +57,7 @@ func (p *player) update(screen *ebiten.Image) {
 			p.bulletSprite.opts.GeoM.Reset()
 			p.bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, p.bulletSprite)
-			p.bullets[i].move(playerBulletSpeed, playerBulletSize)
+			p.bullets[i].move(p.bulletSpeed, float64(p.bulletSize))
 		}
 	}
 }
@@ -91,10 +88,10 @@ func (p *player) move(speed float64) {
 		ty = ty / r * speed
 
 		tx = math.Max(0, p.hitBox.x()+tx) - p.hitBox.x()
-		tx = math.Min(windowWidth-hitBoxSize, p.hitBox.x()+tx) - p.hitBox.x()
+		tx = math.Min(windowWidth-float64(p.hitBoxSize), p.hitBox.x()+tx) - p.hitBox.x()
 
 		ty = math.Max(0, p.hitBox.y()+ty) - p.hitBox.y()
-		ty = math.Min(windowHeight-hitBoxSize, p.hitBox.y()+ty) - p.hitBox.y()
+		ty = math.Min(windowHeight-float64(p.hitBoxSize), p.hitBox.y()+ty) - p.hitBox.y()
 	}
 
 	p.skin.opts.GeoM.Translate(tx, ty)
@@ -105,14 +102,14 @@ func (p *player) move(speed float64) {
 
 func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
 
-	if frameCounter-p.lastShotFrame >= ebiten.MaxTPS()/playerBulletFreq {
+	if frameCounter-p.lastShotFrame >= ebiten.MaxTPS()/p.bulletFreq {
 		indices := findNFirsts(p.bullets, n, func(b bullet) bool { return !b.isOnScreen })
 
 		if len(indices) == n {
 			for i := 0; i < n; i++ {
 				angleDeg := -spreadDeg/2 + float64(i)*spreadDeg/float64(n-1)
-				p.bullets[indices[i]].x = p.hitBox.x() + 15*math.Sin(angleDeg*math.Pi/180) + (hitBoxSize-playerBulletSize)/2
-				p.bullets[indices[i]].y = p.hitBox.y() - 15*math.Cos(angleDeg*math.Pi/180) + (hitBoxSize-playerBulletSize)/2
+				p.bullets[indices[i]].x = p.hitBox.x() + 15*math.Sin(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
+				p.bullets[indices[i]].y = p.hitBox.y() - 15*math.Cos(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
 				if p.isFocus {
 					p.bullets[indices[i]].vx = 0
 					p.bullets[indices[i]].vy = -1
@@ -130,26 +127,37 @@ func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
 
 func initPlayer() player {
 	var p player
+
+	p.skinSize = 8
+	p.hitBoxSize = 2
+	p.mvtSpeed = 3
+	p.bulletSize = 3
+	p.bulletSpeed = 5
+	p.bulletFreq = 60
+	p.baseBulletSpread = 100 //degrees
+	p.focusBulletSpread = 90 //degrees
+	p.bulletStreams = 9
+
 	var errH, errS, errB error
-	p.hitBox.image, errH = ebiten.NewImage(hitBoxSize, hitBoxSize, ebiten.FilterNearest)
-	p.skin.image, errS = ebiten.NewImage(squareSize, squareSize, ebiten.FilterNearest)
+	p.hitBox.image, errH = ebiten.NewImage(p.hitBoxSize, p.hitBoxSize, ebiten.FilterNearest)
+	p.skin.image, errS = ebiten.NewImage(p.skinSize, p.skinSize, ebiten.FilterNearest)
 	logError(errH)
 	logError(errS)
 
 	p.hitBox.image.Fill(color.RGBA{255, 0, 0, 255})
 	p.skin.image.Fill(color.White)
-	p.skin.opts.GeoM.Translate((hitBoxSize-squareSize)/2, (hitBoxSize-squareSize)/2)
+	p.skin.opts.GeoM.Translate(float64(p.hitBoxSize-p.skinSize)/2, float64(p.hitBoxSize-p.skinSize)/2)
 
 	// Start at middle of screen
-	p.hitBox.opts.GeoM.Translate((windowWidth-hitBoxSize)/2, (windowHeight-hitBoxSize)/2)
-	p.skin.opts.GeoM.Translate((windowWidth-hitBoxSize)/2, (windowHeight-hitBoxSize)/2)
+	p.hitBox.opts.GeoM.Translate((windowWidth-float64(p.hitBoxSize))/2, (windowHeight-float64(p.hitBoxSize))/2)
+	p.skin.opts.GeoM.Translate((windowWidth-float64(p.hitBoxSize))/2, (windowHeight-float64(p.hitBoxSize))/2)
 
-	p.bulletSkin, errB = ebiten.NewImage(playerBulletSize, playerBulletSize, ebiten.FilterNearest)
+	p.bulletSkin, errB = ebiten.NewImage(p.bulletSize, p.bulletSize, ebiten.FilterNearest)
 	logError(errB)
 	p.bulletSkin.Fill(color.White)
 	p.bulletSprite = sprite{p.bulletSkin, ebiten.DrawImageOptions{}}
 
-	p.bullets = make([]bullet, maxPlayerBullets)
+	p.bullets = make([]bullet, maxBullets)
 
 	return p
 }

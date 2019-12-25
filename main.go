@@ -10,6 +10,8 @@ const (
 	windowWidth  = 320
 	windowHeight = 240
 	scaleFactor  = 4
+
+	maxBullets = 1000
 )
 
 // Basic sprite with options
@@ -25,11 +27,16 @@ func (spr sprite) y() float64 {
 	return spr.opts.GeoM.Element(1, 2)
 }
 
+type hitBox struct {
+	x, y, xSize, ySize float64
+}
+
 var frameCounter int
 
 // Display the square
-func update(screen *ebiten.Image, p *player) error {
+func update(screen *ebiten.Image, p *player, e *enemy) error {
 
+	e.update(screen)
 	p.update(screen)
 
 	printFPS(screen)
@@ -51,8 +58,9 @@ func drawSprite(screen *ebiten.Image, spr sprite) {
 func main() {
 
 	p := initPlayer()
+	e := initEnemy()
 
-	if err := ebiten.Run(func(screen *ebiten.Image) error { return update(screen, &p) }, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
+	if err := ebiten.Run(func(screen *ebiten.Image) error { return update(screen, &p, &e) }, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
 		panic(err)
 	}
 }
