@@ -14,6 +14,9 @@ const (
 	maxBullets = 1000
 )
 
+// User-defined keymap
+var keyConfig map[string]string
+
 // Basic sprite with options
 type sprite struct {
 	image *ebiten.Image
@@ -43,7 +46,7 @@ func update(screen *ebiten.Image, p *player, e *enemy) error {
 
 	frameCounter++
 
-	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["quit"]]) {
 		os.Exit(0)
 	}
 
@@ -56,6 +59,7 @@ func drawSprite(screen *ebiten.Image, spr sprite) {
 
 // Initialise Ebiten, then loop the update function
 func main() {
+	keyConfig = makeKeyConfig()
 
 	p := initPlayer()
 	e := initEnemy()

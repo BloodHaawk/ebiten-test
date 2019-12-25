@@ -27,6 +27,7 @@ type player struct {
 	baseBulletSpread  float64 //degrees
 	focusBulletSpread float64 //degrees
 	bulletStreams     int
+	bulletSpawnOffset float64
 }
 
 func (p *player) update(screen *ebiten.Image) {
@@ -35,16 +36,16 @@ func (p *player) update(screen *ebiten.Image) {
 	// Draw the square and update the position from keyboard input
 	drawSprite(screen, p.skin)
 
-	// Show the hitBox in red when pressing Shift
-	if ebiten.IsKeyPressed(ebiten.KeyShift) {
+	// Show the hitBox in red when pressing focus
+	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) {
 		drawSprite(screen, p.hitBox)
 		p.isFocus = true
 	} else {
 		p.isFocus = false
 	}
 
-	// Shoot a bullet with Z key
-	if ebiten.IsKeyPressed(ebiten.KeyZ) {
+	// Shoot a bullet
+	if ebiten.IsKeyPressed(keyMap[keyConfig["shoot"]]) {
 		if p.isFocus {
 			p.shootBullet(p.bulletFreq, p.bulletStreams, p.focusBulletSpread)
 		} else {
@@ -65,21 +66,21 @@ func (p *player) update(screen *ebiten.Image) {
 // Move a sprite from keyboard inputs (use Shift to slow down)
 func (p *player) move(speed float64) {
 	// Use Shift to slow down
-	if ebiten.IsKeyPressed(ebiten.KeyShift) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) {
 		speed /= 2
 	}
 	var tx, ty float64
 
-	if ebiten.IsKeyPressed(ebiten.KeyRight) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["right"]]) {
 		tx = 1
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["left"]]) {
 		tx = -1
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyDown) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["down"]]) {
 		ty = 1
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyUp) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["up"]]) {
 		ty = -1
 	}
 
@@ -108,8 +109,8 @@ func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
 		if len(indices) == n {
 			for i := 0; i < n; i++ {
 				angleDeg := -spreadDeg/2 + float64(i)*spreadDeg/float64(n-1)
-				p.bullets[indices[i]].x = p.hitBox.x() + 15*math.Sin(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
-				p.bullets[indices[i]].y = p.hitBox.y() - 15*math.Cos(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
+				p.bullets[indices[i]].x = p.hitBox.x() + p.bulletSpawnOffset*math.Sin(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
+				p.bullets[indices[i]].y = p.hitBox.y() - p.bulletSpawnOffset*math.Cos(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
 				if p.isFocus {
 					p.bullets[indices[i]].vx = 0
 					p.bullets[indices[i]].vy = -1
@@ -137,6 +138,7 @@ func initPlayer() player {
 	p.baseBulletSpread = 100 //degrees
 	p.focusBulletSpread = 90 //degrees
 	p.bulletStreams = 9
+	p.bulletSpawnOffset = 15
 
 	var errH, errS, errB error
 	p.hitBox.image, errH = ebiten.NewImage(p.hitBoxSize, p.hitBoxSize, ebiten.FilterNearest)

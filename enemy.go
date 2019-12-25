@@ -19,11 +19,12 @@ type enemy struct {
 	skinSize int
 	mvtSpeed float64
 
-	bulletSize    int
-	bulletSpeed   float64
-	bulletFreq    int
-	bulletSpread  float64
-	bulletStreams int
+	bulletSize        int
+	bulletSpeed       float64
+	bulletFreq        int
+	bulletSpread      float64
+	bulletStreams     int
+	bulletSpawnOffset float64
 
 	color       color.Color
 	bulletColor color.Color
@@ -35,8 +36,8 @@ func (e *enemy) update(screen *ebiten.Image) {
 	// Draw the square and update the position from keyboard input
 	drawSprite(screen, e.skin)
 
-	// Shoot a bullet with Z key
-	if ebiten.IsKeyPressed(ebiten.KeyQ) {
+	// Shoot a bullett
+	if ebiten.IsKeyPressed(keyMap[keyConfig["bossShoot"]]) {
 		e.shootBullet(e.bulletFreq, e.bulletStreams, e.bulletSpread)
 	}
 
@@ -54,16 +55,16 @@ func (e *enemy) update(screen *ebiten.Image) {
 func (e *enemy) move(speed float64) {
 	var tx, ty float64
 
-	if ebiten.IsKeyPressed(ebiten.KeyD) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["bossRight"]]) {
 		tx = 1
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyA) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["bossLeft"]]) {
 		tx = -1
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyS) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["bossDown"]]) {
 		ty = 1
 	}
-	if ebiten.IsKeyPressed(ebiten.KeyW) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["bossUp"]]) {
 		ty = -1
 	}
 
@@ -93,8 +94,8 @@ func (e *enemy) shootBullet(freq int, n int, spreadDeg float64) {
 		if len(indices) == n {
 			for i := 0; i < n; i++ {
 				angleDeg := -spreadDeg/2 + float64(i)*spreadDeg/float64(n-1)
-				e.bullets[indices[i]].x = e.hitBox.x + 15*math.Sin(angleDeg*math.Pi/180) + (e.hitBox.xSize-float64(e.bulletSize))/2
-				e.bullets[indices[i]].y = e.hitBox.y + 15*math.Cos(angleDeg*math.Pi/180) + (e.hitBox.ySize-float64(e.bulletSize))/2
+				e.bullets[indices[i]].x = e.hitBox.x + e.bulletSpawnOffset*math.Sin(angleDeg*math.Pi/180) + (e.hitBox.xSize-float64(e.bulletSize))/2
+				e.bullets[indices[i]].y = e.hitBox.y + e.bulletSpawnOffset*math.Cos(angleDeg*math.Pi/180) + (e.hitBox.ySize-float64(e.bulletSize))/2
 				e.bullets[indices[i]].vx = math.Sin(angleDeg * math.Pi / 180)
 				e.bullets[indices[i]].vy = math.Cos(angleDeg * math.Pi / 180)
 				e.bullets[indices[i]].isOnScreen = true
@@ -108,6 +109,8 @@ func (e *enemy) shootBullet(freq int, n int, spreadDeg float64) {
 func initEnemy() enemy {
 	var e enemy
 
+	e.hitBox.xSize = 15
+	e.hitBox.ySize = 15
 	e.skinSize = 15
 	e.mvtSpeed = 1
 	e.bulletSize = 5
@@ -115,6 +118,7 @@ func initEnemy() enemy {
 	e.bulletFreq = 5
 	e.bulletSpread = 270 //degrees
 	e.bulletStreams = 30
+	e.bulletSpawnOffset = 20
 	e.color = color.RGBA{0, 255, 0, 255}
 	e.bulletColor = color.RGBA{210, 30, 210, 255}
 
