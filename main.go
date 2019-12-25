@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"image/color"
-	"log"
 	"math"
 	"os"
 
@@ -95,9 +94,7 @@ func update(screen *ebiten.Image, p *player) error {
 		}
 	}
 
-	msg := fmt.Sprintf(`TPS: %0.2f
-FPS: %0.2f
-`, ebiten.CurrentTPS(), ebiten.CurrentFPS())
+	msg := fmt.Sprintf("TPS: %0.2f\nFPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS())
 	ebitenutil.DebugPrint(screen, msg)
 
 	frameCounter++
@@ -118,16 +115,27 @@ func (p *player) move(speed float64) {
 	var tx, ty float64
 
 	if ebiten.IsKeyPressed(ebiten.KeyRight) {
-		tx = math.Min(windowWidth-hitBoxSize-p.hitBox.x(), speed)
+		tx = 1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyLeft) {
-		tx = -math.Min(p.hitBox.x(), speed)
+		tx = -1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyDown) {
-		ty = math.Min(windowHeight-hitBoxSize-p.hitBox.y(), speed)
+		ty = 1
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyUp) {
-		ty = -math.Min(p.hitBox.y(), speed)
+		ty = -1
+	}
+
+	if r := math.Sqrt(tx*tx + ty*ty); r != 0 {
+		tx = tx / r * speed
+		ty = ty / r * speed
+
+		tx = math.Max(0, p.hitBox.x()+tx) - p.hitBox.x()
+		tx = math.Min(windowWidth-hitBoxSize, p.hitBox.x()+tx) - p.hitBox.x()
+
+		ty = math.Max(0, p.hitBox.y()+ty) - p.hitBox.y()
+		ty = math.Min(windowHeight-hitBoxSize, p.hitBox.y()+ty) - p.hitBox.y()
 	}
 
 	p.skin.opts.GeoM.Translate(tx, ty)
@@ -219,11 +227,5 @@ func main() {
 
 	if err := ebiten.Run(func(screen *ebiten.Image) error { return update(screen, &p) }, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
 		panic(err)
-	}
-}
-
-func logError(err error) {
-	if err != nil {
-		log.Fatal(err)
 	}
 }
