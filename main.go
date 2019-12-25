@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"os"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
@@ -20,9 +21,12 @@ const (
 	mvtSpeed   = 3
 
 	maxPlayerBullets  = 1000
-	playerBulletSize  = 2
+	playerBulletSize  = 3
 	playerBulletSpeed = 5
 	playerBulletFreq  = 60
+	baseBulletSpread  = 100 //degrees
+	focusBulletSpread = 90  //degrees
+	bulletStreams     = 9
 )
 
 // Basic sprite with options
@@ -44,12 +48,13 @@ type player struct {
 	hitBox        sprite
 	bullets       []bullet
 	lastShotFrame int
+	isFocus       bool
 }
 
 // Bullet type
 type bullet struct {
-	x, y       float64
-	isOnScreen bool
+	x, y, vx, vy float64
+	isOnScreen   bool
 }
 
 var bulletSkin *ebiten.Image
@@ -59,7 +64,6 @@ var frameCounter int
 
 // Display the square
 func update(screen *ebiten.Image, p *player) error {
-
 	p.move(mvtSpeed)
 
 	// Draw the square and update the position from keyboard input
@@ -68,19 +72,26 @@ func update(screen *ebiten.Image, p *player) error {
 	// Show the hitBox in red when pressing Shift
 	if ebiten.IsKeyPressed(ebiten.KeyShift) {
 		drawSprite(screen, p.hitBox)
+		p.isFocus = true
+	} else {
+		p.isFocus = false
 	}
 
-	// Shoot a bullet with SpaceBar
-	if ebiten.IsKeyPressed(ebiten.KeySpace) {
-		p.shootBullet(playerBulletFreq)
+	// Shoot a bullet with Z key
+	if ebiten.IsKeyPressed(ebiten.KeyZ) {
+		if p.isFocus {
+			p.shootBullet(playerBulletFreq, bulletStreams, focusBulletSpread)
+		} else {
+			p.shootBullet(playerBulletFreq, bulletStreams, baseBulletSpread)
+		}
 	}
 
 	for i := range p.bullets {
 		if p.bullets[i].isOnScreen {
-			p.bullets[i].move(playerBulletSpeed, playerBulletSize)
 			bulletSprite.opts.GeoM.Reset()
 			bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, bulletSprite)
+			p.bullets[i].move(playerBulletSpeed, playerBulletSize)
 		}
 	}
 
@@ -91,6 +102,10 @@ FPS: %0.2f
 
 	frameCounter++
 
+	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		os.Exit(0)
+	}
+
 	return nil
 }
 
@@ -98,7 +113,7 @@ FPS: %0.2f
 func (p *player) move(speed float64) {
 	// Use Shift to slow down
 	if ebiten.IsKeyPressed(ebiten.KeyShift) {
-		speed = speed / 2
+		speed /= 2
 	}
 	var tx, ty float64
 
@@ -121,29 +136,54 @@ func (p *player) move(speed float64) {
 	return
 }
 
-func (p *player) shootBullet(freq int) {
+func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
+
 	if frameCounter-p.lastShotFrame >= ebiten.MaxTPS()/playerBulletFreq {
-		for i := range p.bullets {
-			if !p.bullets[i].isOnScreen {
-				p.bullets[i].x = p.hitBox.x() - (playerBulletSize-hitBoxSize)/2
-				p.bullets[i].y = p.hitBox.y() - 10
-				p.bullets[i].isOnScreen = true
-				break
+		indices := findNFirsts(p.bullets, n, func(b bullet) bool { return !b.isOnScreen })
+
+		if len(indices) == n {
+			for i := 0; i < n; i++ {
+				angleDeg := -spreadDeg/2 + float64(i)*spreadDeg/float64(n-1)
+				p.bullets[indices[i]].x = p.hitBox.x() + 15*math.Sin(angleDeg*math.Pi/180) + (hitBoxSize-playerBulletSize)/2
+				p.bullets[indices[i]].y = p.hitBox.y() - 15*math.Cos(angleDeg*math.Pi/180) + (hitBoxSize-playerBulletSize)/2
+				if p.isFocus {
+					p.bullets[indices[i]].vx = 0
+					p.bullets[indices[i]].vy = -1
+				} else {
+					p.bullets[indices[i]].vx = math.Sin(angleDeg * math.Pi / 180)
+					p.bullets[indices[i]].vy = -math.Cos(angleDeg * math.Pi / 180)
+				}
+				p.bullets[indices[i]].isOnScreen = true
 			}
 		}
 		p.lastShotFrame = frameCounter
 	}
+
 }
 
 func (b *bullet) move(speed, size float64) {
-	b.y = b.y - speed
-	if b.y+size < 0 {
+	b.x = b.x + speed*b.vx
+	b.y = b.y + speed*b.vy
+	if b.x+size < -30 || b.y+size < -30 || b.x > windowWidth+30 || b.y > windowHeight+30 {
 		b.isOnScreen = false
 	}
 }
 
 func drawSprite(screen *ebiten.Image, spr sprite) {
 	screen.DrawImage(spr.image, &spr.opts)
+}
+
+func findNFirsts(bullets []bullet, n int, f func(bullet) bool) []int {
+	indices := make([]int, 0, n)
+	for i := range bullets {
+		if f(bullets[i]) {
+			indices = append(indices, i)
+		}
+		if len(indices) == n {
+			break
+		}
+	}
+	return indices
 }
 
 func initPlayer() player {
@@ -153,9 +193,14 @@ func initPlayer() player {
 	p.skin.image, errS = ebiten.NewImage(squareSize, squareSize, ebiten.FilterNearest)
 	logError(errH)
 	logError(errS)
-	p.hitBox.image.Fill(color.RGBA{0xff, 0x00, 0x00, 0xff})
+
+	p.hitBox.image.Fill(color.RGBA{255, 0, 0, 255})
 	p.skin.image.Fill(color.White)
 	p.skin.opts.GeoM.Translate((hitBoxSize-squareSize)/2, (hitBoxSize-squareSize)/2)
+
+	// Start at middle of screen
+	p.hitBox.opts.GeoM.Translate((windowWidth-hitBoxSize)/2, (windowHeight-hitBoxSize)/2)
+	p.skin.opts.GeoM.Translate((windowWidth-hitBoxSize)/2, (windowHeight-hitBoxSize)/2)
 
 	bulletSkin, errB = ebiten.NewImage(playerBulletSize, playerBulletSize, ebiten.FilterNearest)
 	logError(errB)
