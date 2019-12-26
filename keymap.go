@@ -13,6 +13,7 @@ func getConfig(configFile string, config *map[string]string) {
 	if err != nil {
 		return
 	}
+	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -22,8 +23,6 @@ func getConfig(configFile string, config *map[string]string) {
 		}
 	}
 	logError(scanner.Err())
-	file.Close()
-
 	return
 }
 
@@ -34,9 +33,9 @@ func makeKeyConfig() map[string]string {
 	getConfig("config", &config)          // use user-defined
 
 	return config
-
 }
 
+// US keyboard mapping
 var keyMap = map[string]ebiten.Key{
 	"0":            ebiten.Key0,
 	"1":            ebiten.Key1,

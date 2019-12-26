@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	windowWidth  = 320
-	windowHeight = 240
-	scaleFactor  = 4
+	windowWidth  = 1280
+	windowHeight = 960
+	scaleFactor  = 1
 
 	maxBullets = 1000
 )

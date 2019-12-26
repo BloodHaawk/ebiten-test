@@ -129,16 +129,16 @@ func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
 func initPlayer() player {
 	var p player
 
-	p.skinSize = 8
-	p.hitBoxSize = 2
-	p.mvtSpeed = 3
-	p.bulletSize = 3
-	p.bulletSpeed = 5
+	p.skinSize = 32
+	p.hitBoxSize = 8
+	p.mvtSpeed = 12
+	p.bulletSize = 12
+	p.bulletSpeed = 20
 	p.bulletFreq = 60
 	p.baseBulletSpread = 100 //degrees
 	p.focusBulletSpread = 90 //degrees
 	p.bulletStreams = 9
-	p.bulletSpawnOffset = 15
+	p.bulletSpawnOffset = 60
 
 	var errH, errS, errB error
 	p.hitBox.image, errH = ebiten.NewImage(p.hitBoxSize, p.hitBoxSize, ebiten.FilterNearest)

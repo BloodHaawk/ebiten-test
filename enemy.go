@@ -109,16 +109,16 @@ func (e *enemy) shootBullet(freq int, n int, spreadDeg float64) {
 func initEnemy() enemy {
 	var e enemy
 
-	e.hitBox.xSize = 15
-	e.hitBox.ySize = 15
-	e.skinSize = 15
-	e.mvtSpeed = 1
-	e.bulletSize = 5
-	e.bulletSpeed = 2
+	e.hitBox.xSize = 60
+	e.hitBox.ySize = 60
+	e.skinSize = 60
+	e.mvtSpeed = 4
+	e.bulletSize = 20
+	e.bulletSpeed = 8
 	e.bulletFreq = 5
 	e.bulletSpread = 270 //degrees
 	e.bulletStreams = 30
-	e.bulletSpawnOffset = 20
+	e.bulletSpawnOffset = 80
 	e.color = color.RGBA{0, 255, 0, 255}
 	e.bulletColor = color.RGBA{210, 30, 210, 255}
 
