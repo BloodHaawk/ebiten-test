@@ -1,8 +1,9 @@
 package main
 
-import "strconv"
-
-import "log"
+import (
+	"log"
+	"strconv"
+)
 
 func makeConfig() map[string]string {
 	config := make(map[string]string, 0)
@@ -13,7 +14,17 @@ func makeConfig() map[string]string {
 	return config
 }
 
-// Read deadZone parameter. Should always be between 0 and 1
+// Read gamepadID parameter. Should be an integer.
+func setGamepadID(config map[string]string) {
+	id, err := strconv.ParseInt(config["gamepadID"], 0, 64)
+	if err != nil {
+		log.Fatalf("gamepadID parameter (value read: %s) was not set correctly in config file. Edit it with an integer value.", config["gamepadID"])
+	} else {
+		gamepadID = int(id)
+	}
+}
+
+// Read deadZone parameter. Should be a number between 0 and 1.
 func setDeadZone(config map[string]string) {
 	f, err := strconv.ParseFloat(config["deadZone"], 64)
 	if err != nil || f < 0 || f > 1 {
