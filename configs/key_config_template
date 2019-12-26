@@ -5,8 +5,3 @@ up Up
 down Down
 shoot Z
 focus Shift
-bossLeft A
-bossRight D
-bossUp W
-bossDown S
-bossShoot Q

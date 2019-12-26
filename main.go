@@ -14,8 +14,12 @@ const (
 	maxBullets = 1000
 )
 
-// User-defined keymap
+// User-defined configs
+var config map[string]string
 var keyConfig map[string]string
+var buttonConfig map[string]string
+
+var deadZone float64
 
 // Basic sprite with options
 type sprite struct {
@@ -39,14 +43,16 @@ var frameCounter int
 // Display the square
 func update(screen *ebiten.Image, p *player, e *enemy) error {
 
+	p.updateBullets(screen)
 	e.update(screen)
 	p.update(screen)
+	e.updateBullets(screen)
 
 	printFPS(screen)
 
 	frameCounter++
 
-	if ebiten.IsKeyPressed(keyMap[keyConfig["quit"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["quit"]]) || ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["quit"]]) {
 		os.Exit(0)
 	}
 
@@ -59,7 +65,11 @@ func drawSprite(screen *ebiten.Image, spr sprite) {
 
 // Initialise Ebiten, then loop the update function
 func main() {
+	config = makeConfig()
+	setDeadZone(config)
+
 	keyConfig = makeKeyConfig()
+	buttonConfig = makeButtonConfig()
 
 	p := initPlayer()
 	e := initEnemy()

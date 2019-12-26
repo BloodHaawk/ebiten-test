@@ -35,11 +35,10 @@ func (e *enemy) update(screen *ebiten.Image) {
 
 	// Draw the square and update the position from keyboard input
 	drawSprite(screen, e.skin)
+}
 
-	// Shoot a bullett
-	if ebiten.IsKeyPressed(keyMap[keyConfig["bossShoot"]]) {
-		e.shootBullet(e.bulletFreq, e.bulletStreams, e.bulletSpread)
-	}
+func (e *enemy) updateBullets(screen *ebiten.Image) {
+	e.shootBullet(e.bulletFreq, e.bulletStreams, e.bulletSpread)
 
 	for i := range e.bullets {
 		if e.bullets[i].isOnScreen {
@@ -55,28 +54,15 @@ func (e *enemy) update(screen *ebiten.Image) {
 func (e *enemy) move(speed float64) {
 	var tx, ty float64
 
-	if ebiten.IsKeyPressed(keyMap[keyConfig["bossRight"]]) {
+	if (frameCounter+60)%240 < 120 {
 		tx = 1
-	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["bossLeft"]]) {
+	} else {
 		tx = -1
-	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["bossDown"]]) {
-		ty = 1
-	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["bossUp"]]) {
-		ty = -1
 	}
 
 	if r := math.Sqrt(tx*tx + ty*ty); r != 0 {
 		tx = tx / r * speed
 		ty = ty / r * speed
-
-		tx = math.Max(0, e.hitBox.x+tx) - e.hitBox.x
-		tx = math.Min(windowWidth-e.hitBox.xSize, e.hitBox.x+tx) - e.hitBox.x
-
-		ty = math.Max(0, e.hitBox.y+ty) - e.hitBox.y
-		ty = math.Min(windowHeight-e.hitBox.ySize, e.hitBox.y+ty) - e.hitBox.y
 	}
 
 	e.skin.opts.GeoM.Translate(tx, ty)

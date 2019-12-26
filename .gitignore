@@ -1,2 +1,4 @@
 go.sum
-config
+configs/config
+configs/key_config
+configs/button_config

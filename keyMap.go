@@ -1,36 +1,14 @@
 package main
 
 import (
-	"bufio"
-	"os"
-	"strings"
-
 	"github.com/hajimehoshi/ebiten"
 )
-
-func getConfig(configFile string, config *map[string]string) {
-	file, err := os.Open(configFile)
-	if err != nil {
-		return
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		var kv = strings.Split(scanner.Text(), " ")
-		if len(kv) == 2 {
-			(*config)[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
-		}
-	}
-	logError(scanner.Err())
-	return
-}
 
 func makeKeyConfig() map[string]string {
 	config := make(map[string]string, 0)
 
-	getConfig("config_template", &config) // use defaults
-	getConfig("config", &config)          // use user-defined
+	getConfig("configs/key_config_template", &config) // use defaults
+	getConfig("configs/key_config", &config)          // use user-defined
 
 	return config
 }

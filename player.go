@@ -37,15 +37,18 @@ func (p *player) update(screen *ebiten.Image) {
 	drawSprite(screen, p.skin)
 
 	// Show the hitBox in red when pressing focus
-	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) || ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["focus"]]) {
 		drawSprite(screen, p.hitBox)
 		p.isFocus = true
 	} else {
 		p.isFocus = false
 	}
 
-	// Shoot a bullet
-	if ebiten.IsKeyPressed(keyMap[keyConfig["shoot"]]) {
+}
+
+// Update player bullets
+func (p *player) updateBullets(screen *ebiten.Image) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["shoot"]]) || ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["shoot"]]) {
 		if p.isFocus {
 			p.shootBullet(p.bulletFreq, p.bulletStreams, p.focusBulletSpread)
 		} else {
@@ -66,21 +69,29 @@ func (p *player) update(screen *ebiten.Image) {
 // Move a sprite from keyboard inputs (use Shift to slow down)
 func (p *player) move(speed float64) {
 	// Use Shift to slow down
-	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) || ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["focus"]]) {
 		speed /= 2
 	}
 	var tx, ty float64
 
-	if ebiten.IsKeyPressed(keyMap[keyConfig["right"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["right"]]) ||
+		ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["right"]]) ||
+		ebiten.GamepadAxis(0, 0) > deadZone {
 		tx = 1
 	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["left"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["left"]]) ||
+		ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["left"]]) ||
+		ebiten.GamepadAxis(0, 0) < -deadZone {
 		tx = -1
 	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["down"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["down"]]) ||
+		ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["down"]]) ||
+		ebiten.GamepadAxis(0, 1) > deadZone {
 		ty = 1
 	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["up"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["up"]]) ||
+		ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["up"]]) ||
+		ebiten.GamepadAxis(0, 1) < -deadZone {
 		ty = -1
 	}
 
