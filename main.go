@@ -41,12 +41,16 @@ type hitBox struct {
 var frameCounter int
 
 // Display the square
-func update(screen *ebiten.Image, p *player, e *enemy) error {
+func update(screen *ebiten.Image, p *player, e []enemy) error {
 
-	p.updateBullets(screen)
-	e.update(screen)
+	p.updateBullets(screen, e)
+	for i := range e {
+		e[i].update(screen)
+	}
 	p.update(screen)
-	e.updateBullets(screen)
+	for i := range e {
+		e[i].updateBullets(screen, p)
+	}
 
 	printFPS(screen)
 
@@ -72,9 +76,11 @@ func main() {
 	buttonConfig = makeButtonConfig()
 
 	p := initPlayer()
-	e := initEnemy()
+	e1 := initEnemy(windowWidth/3, 150)
+	e2 := initEnemy(2*windowWidth/3, 150)
+	e := []enemy{e1, e2}
 
-	if err := ebiten.Run(func(screen *ebiten.Image) error { return update(screen, &p, &e) }, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
+	if err := ebiten.Run(func(screen *ebiten.Image) error { return update(screen, &p, e) }, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
 		panic(err)
 	}
 }

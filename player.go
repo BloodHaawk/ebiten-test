@@ -30,6 +30,21 @@ type player struct {
 	bulletSpawnOffset float64
 }
 
+// Implement collisionBox interface
+
+func (p *player) posX() float64 {
+	return p.hitBox.x()
+}
+func (p *player) posY() float64 {
+	return p.hitBox.y()
+}
+func (p *player) sizeX() float64 {
+	return float64(p.hitBoxSize)
+}
+func (p *player) sizeY() float64 {
+	return float64(p.hitBoxSize)
+}
+
 func (p *player) update(screen *ebiten.Image) {
 	p.move(p.mvtSpeed)
 
@@ -47,7 +62,7 @@ func (p *player) update(screen *ebiten.Image) {
 }
 
 // Update player bullets
-func (p *player) updateBullets(screen *ebiten.Image) {
+func (p *player) updateBullets(screen *ebiten.Image, e []enemy) {
 	if ebiten.IsKeyPressed(keyMap[keyConfig["shoot"]]) || ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["shoot"]]) {
 		if p.isFocus {
 			p.shootBullet(p.bulletFreq, p.bulletStreams, p.focusBulletSpread)
@@ -62,6 +77,12 @@ func (p *player) updateBullets(screen *ebiten.Image) {
 			p.bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, p.bulletSprite)
 			p.bullets[i].move(p.bulletSpeed, float64(p.bulletSize))
+			for j := range e {
+				if collision(&p.bullets[i], &e[j]) {
+					p.bullets[i].isOnScreen = false
+					break
+				}
+			}
 		}
 	}
 }
@@ -129,6 +150,8 @@ func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
 					p.bullets[indices[i]].vx = math.Sin(angleDeg * math.Pi / 180)
 					p.bullets[indices[i]].vy = -math.Cos(angleDeg * math.Pi / 180)
 				}
+				p.bullets[indices[i]].xSize = p.bulletSize
+				p.bullets[indices[i]].ySize = p.bulletSize
 				p.bullets[indices[i]].isOnScreen = true
 			}
 		}
@@ -142,7 +165,7 @@ func initPlayer() player {
 
 	p.skinSize = 32
 	p.hitBoxSize = 8
-	p.mvtSpeed = 12
+	p.mvtSpeed = 8
 	p.bulletSize = 12
 	p.bulletSpeed = 20
 	p.bulletFreq = 60

@@ -30,6 +30,21 @@ type enemy struct {
 	bulletColor color.Color
 }
 
+// Implement collisionBox interface
+
+func (e *enemy) posX() float64 {
+	return e.hitBox.x
+}
+func (e *enemy) posY() float64 {
+	return e.hitBox.y
+}
+func (e *enemy) sizeX() float64 {
+	return float64(e.hitBox.xSize)
+}
+func (e *enemy) sizeY() float64 {
+	return float64(e.hitBox.ySize)
+}
+
 func (e *enemy) update(screen *ebiten.Image) {
 	e.move(e.mvtSpeed)
 
@@ -37,7 +52,7 @@ func (e *enemy) update(screen *ebiten.Image) {
 	drawSprite(screen, e.skin)
 }
 
-func (e *enemy) updateBullets(screen *ebiten.Image) {
+func (e *enemy) updateBullets(screen *ebiten.Image, p *player) {
 	e.shootBullet(e.bulletFreq, e.bulletStreams, e.bulletSpread)
 
 	for i := range e.bullets {
@@ -46,6 +61,10 @@ func (e *enemy) updateBullets(screen *ebiten.Image) {
 			e.bulletSprite.opts.GeoM.Translate(e.bullets[i].x, e.bullets[i].y)
 			drawSprite(screen, e.bulletSprite)
 			e.bullets[i].move(e.bulletSpeed, float64(e.bulletSize))
+			if collision(p, &e.bullets[i]) {
+				e.bullets[i].isOnScreen = false
+				screen.Fill(color.RGBA{255, 0, 0, 255})
+			}
 		}
 	}
 }
@@ -58,6 +77,11 @@ func (e *enemy) move(speed float64) {
 		tx = 1
 	} else {
 		tx = -1
+	}
+	if (frameCounter+30)%120 < 60 {
+		ty = 1
+	} else {
+		ty = -1
 	}
 
 	if r := math.Sqrt(tx*tx + ty*ty); r != 0 {
@@ -92,18 +116,18 @@ func (e *enemy) shootBullet(freq int, n int, spreadDeg float64) {
 
 }
 
-func initEnemy() enemy {
+func initEnemy(x, y float64) enemy {
 	var e enemy
 
 	e.hitBox.xSize = 60
 	e.hitBox.ySize = 60
 	e.skinSize = 60
-	e.mvtSpeed = 4
+	e.mvtSpeed = 2
 	e.bulletSize = 20
-	e.bulletSpeed = 8
-	e.bulletFreq = 5
+	e.bulletSpeed = 4
+	e.bulletFreq = 4
 	e.bulletSpread = 270 //degrees
-	e.bulletStreams = 30
+	e.bulletStreams = 25
 	e.bulletSpawnOffset = 80
 	e.color = color.RGBA{0, 255, 0, 255}
 	e.bulletColor = color.RGBA{210, 30, 210, 255}
@@ -116,9 +140,9 @@ func initEnemy() enemy {
 	e.skin.image.Fill(e.color)
 	e.skin.opts.GeoM.Translate((e.hitBox.xSize-float64(e.skinSize))/2, (e.hitBox.ySize-float64(e.skinSize))/2)
 
-	// Start at middle of screen
-	e.hitBox.x = (windowWidth - e.hitBox.xSize) / 2
-	e.skin.opts.GeoM.Translate((windowWidth-e.hitBox.xSize)/2, 0)
+	e.hitBox.x = x
+	e.hitBox.y = y
+	e.skin.opts.GeoM.Translate(x, y)
 
 	e.bulletSkin, errB = ebiten.NewImage(e.bulletSize, e.bulletSize, ebiten.FilterNearest)
 	logError(errB)

@@ -4,6 +4,22 @@ package main
 type bullet struct {
 	x, y, vx, vy float64
 	isOnScreen   bool
+	xSize, ySize int
+}
+
+// Implement collisionBox
+
+func (b *bullet) posX() float64 {
+	return b.x
+}
+func (b *bullet) posY() float64 {
+	return b.y
+}
+func (b *bullet) sizeX() float64 {
+	return float64(b.xSize)
+}
+func (b *bullet) sizeY() float64 {
+	return float64(b.ySize)
 }
 
 func (b *bullet) move(speed, size float64) {
