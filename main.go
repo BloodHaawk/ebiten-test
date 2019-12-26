@@ -19,6 +19,7 @@ var config map[string]string
 var keyConfig map[string]string
 var buttonConfig map[string]string
 
+var gamepadID int
 var deadZone float64
 
 // Basic sprite with options
@@ -42,7 +43,6 @@ var frameCounter int
 
 // Display the square
 func update(screen *ebiten.Image, p *player, e []enemy) error {
-
 	p.updateBullets(screen, e)
 	for i := range e {
 		e[i].update(screen)
@@ -56,7 +56,7 @@ func update(screen *ebiten.Image, p *player, e []enemy) error {
 
 	frameCounter++
 
-	if ebiten.IsKeyPressed(keyMap[keyConfig["quit"]]) || ebiten.IsGamepadButtonPressed(0, buttonMap[buttonConfig["quit"]]) {
+	if ebiten.IsKeyPressed(keyMap[keyConfig["quit"]]) || ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["quit"]]) {
 		os.Exit(0)
 	}
 
@@ -70,6 +70,7 @@ func drawSprite(screen *ebiten.Image, spr sprite) {
 // Initialise Ebiten, then loop the update function
 func main() {
 	config = makeConfig()
+	setGamepadID(config)
 	setDeadZone(config)
 
 	keyConfig = makeKeyConfig()
