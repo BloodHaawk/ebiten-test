@@ -15,6 +15,12 @@ func (b *bullet) posX() float64 {
 func (b *bullet) posY() float64 {
 	return b.y
 }
+func (b *bullet) vX() float64 {
+	return b.vx
+}
+func (b *bullet) vY() float64 {
+	return b.vy
+}
 func (b *bullet) sizeX() float64 {
 	return float64(b.xSize)
 }

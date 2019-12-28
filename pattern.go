@@ -35,11 +35,11 @@ func (p *pattern) updateBullets(screen *ebiten.Image, hb hitBox, pl *player) {
 			p.opts.bulletSprite.opts.GeoM.Reset()
 			p.opts.bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, p.opts.bulletSprite)
-			p.bullets[i].move(p.opts.bulletSpeed, float64(p.opts.bulletSize))
 			if collision(pl, &p.bullets[i]) {
 				p.bullets[i].isOnScreen = false
 				screen.Fill(color.RGBA{255, 0, 0, 255})
 			}
+			p.bullets[i].move(p.opts.bulletSpeed, float64(p.opts.bulletSize))
 		}
 	}
 
@@ -76,6 +76,10 @@ func (p *pattern) spawn(hb hitBox) {
 func initPattern(isAimed bool, opts patternOpts) pattern {
 
 	bullets := make([]bullet, maxBullets)
+	for i := range bullets {
+		bullets[i].xSize = opts.bulletSize
+		bullets[i].ySize = opts.bulletSize
+	}
 	var aimLine float64 = 0
 
 	return pattern{

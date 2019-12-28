@@ -17,6 +17,8 @@ type player struct {
 	lastShotFrame int
 	isFocus       bool
 
+	vx, vy float64
+
 	skinSize   int
 	hitBoxSize int
 	mvtSpeed   float64
@@ -37,6 +39,12 @@ func (p *player) posX() float64 {
 }
 func (p *player) posY() float64 {
 	return p.hitBox.y()
+}
+func (p *player) vX() float64 {
+	return p.vx
+}
+func (p *player) vY() float64 {
+	return p.vy
 }
 func (p *player) sizeX() float64 {
 	return float64(p.hitBoxSize)
@@ -137,6 +145,9 @@ func (p *player) move(speed float64) {
 	p.skin.opts.GeoM.Translate(tx, ty)
 	p.hitBox.opts.GeoM.Translate(tx, ty)
 
+	p.vx = tx
+	p.vy = ty
+
 	return
 }
 
@@ -224,6 +235,8 @@ func initPlayer() player {
 		bulletSprite,
 		0,     // lastShotFrame
 		false, // isFocus
+
+		0, 0, // Initialise at 0 speed
 
 		skinSize,
 		hitBoxSize,
