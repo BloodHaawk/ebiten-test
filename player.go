@@ -91,13 +91,13 @@ func (p *player) updateBullets(screen *ebiten.Image, e []enemy) {
 			p.bulletSprite.opts.GeoM.Reset()
 			p.bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, p.bulletSprite)
-			p.bullets[i].move(p.bulletSpeed, float64(p.bulletSize))
 			for j := range e {
 				if collision(&p.bullets[i], &e[j]) {
 					p.bullets[i].isOnScreen = false
 					break
 				}
 			}
+			p.bullets[i].move(p.bulletSpeed, float64(p.bulletSize))
 		}
 	}
 }
