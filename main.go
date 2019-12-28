@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image/color"
 	"os"
 
 	"github.com/hajimehoshi/ebiten"
@@ -49,7 +50,8 @@ func update(screen *ebiten.Image, p *player, e []enemy) error {
 	}
 	p.update(screen)
 	for i := range e {
-		e[i].updateBullets(screen, p)
+		e[i].shootBullets()
+		e[i].pattern.updateBullets(screen, e[i].hitBox, p)
 	}
 
 	printFPS(screen)
@@ -77,8 +79,58 @@ func main() {
 	buttonConfig = makeButtonConfig()
 
 	p := initPlayer()
-	e1 := initEnemy(windowWidth/3, 150)
-	e2 := initEnemy(2*windowWidth/3, 150)
+
+	var (
+		bulletSize        int         = 20
+		bulletSpeed       float64     = 6
+		bulletFreq        int         = 10
+		bulletSpread      float64     = 270 //degrees
+		bulletStreams     int         = 25
+		bulletSpawnOffset float64     = 80
+		bulletColor       color.Color = color.RGBA{210, 30, 210, 255}
+	)
+
+	bulletSkin, errB := ebiten.NewImage(bulletSize, bulletSize, ebiten.FilterNearest)
+	logError(errB)
+	bulletSkin.Fill(bulletColor)
+	bulletSprite := sprite{bulletSkin, ebiten.DrawImageOptions{}}
+
+	pattOps1 := patternOpts{
+		bulletSkin,
+		bulletSprite,
+
+		bulletSize,
+		bulletSpeed,
+		bulletFreq,
+		bulletSpread,
+		bulletStreams,
+		bulletSpawnOffset,
+
+		bulletColor,
+	}
+
+	e1 := initEnemy(
+		windowWidth/3,              // Spawn point x-coord
+		150,                        // Spawn point y-coord
+		60,                         // Hitbox x-size
+		60,                         // Hitbox y-size
+		2,                          // Movement speed
+		60,                         // Skin size
+		true,                       // isAimed
+		color.RGBA{0, 255, 0, 255}, // Skin color
+		pattOps1,                   // Patterns options
+	)
+	e2 := initEnemy(
+		2*windowWidth/3,            // Spawn point x-coord
+		150,                        // Spawn point y-coord
+		60,                         // Hitbox x-size
+		60,                         // Hitbox y-size
+		2,                          // Movement speed
+		60,                         // Skin size
+		true,                       // isAimed
+		color.RGBA{0, 255, 0, 255}, // Skin color
+		pattOps1,                   // Patterns options
+	)
 	e := []enemy{e1, e2}
 
 	if err := ebiten.Run(func(screen *ebiten.Image) error { return update(screen, &p, e) }, windowWidth, windowHeight, scaleFactor, "Hello, world!"); err != nil {
