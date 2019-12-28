@@ -143,11 +143,16 @@ func (p *player) move(speed float64) {
 func (p *player) shootBullets(freq int, n int, spreadDeg float64) {
 
 	if frameCounter-p.lastShotFrame >= ebiten.MaxTPS()/p.bulletFreq {
-		indices := findNFirsts(p.bullets, n, func(b bullet) bool { return !b.isOnScreen })
 
-		if len(indices) == n {
-			for i := 0; i < n; i++ {
-				angleDeg := -spreadDeg/2 + float64(i)*spreadDeg/float64(n-1)
+		if indices := findNFirsts(p.bullets, n, func(b bullet) bool { return !b.isOnScreen }); len(indices) == n {
+
+			for i := range indices {
+				var angleDeg float64
+				if n == 1 {
+					angleDeg = 0
+				} else {
+					angleDeg = -spreadDeg/2 + float64(i)*spreadDeg/float64(n-1)
+				}
 				p.bullets[indices[i]].x = -float64(p.bulletSize)/2 + p.centreX() + p.bulletSpawnOffset*math.Sin(angleDeg*math.Pi/180)
 				p.bullets[indices[i]].y = -float64(p.bulletSize)/2 + p.centreY() - p.bulletSpawnOffset*math.Cos(angleDeg*math.Pi/180)
 				if p.isFocus {

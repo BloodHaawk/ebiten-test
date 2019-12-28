@@ -30,8 +30,8 @@ func (b *bullet) centreY() float64 {
 }
 
 func (b *bullet) move(speed, size float64) {
-	b.x = b.x + speed*b.vx
-	b.y = b.y + speed*b.vy
+	b.x += speed * b.vx
+	b.y += speed * b.vy
 	if b.x+size < -30 || b.y+size < -30 || b.x > windowWidth+30 || b.y > windowHeight+30 {
 		b.isOnScreen = false
 	}

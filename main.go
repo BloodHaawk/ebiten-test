@@ -117,7 +117,7 @@ func main() {
 	}
 
 	e1 := initEnemy(
-		windowWidth/3,              // Spawn point x-coord
+		windowWidth/2,              // Spawn point x-coord
 		150,                        // Spawn point y-coord
 		60,                         // Hitbox x-size
 		60,                         // Hitbox y-size
