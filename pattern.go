@@ -47,7 +47,7 @@ func (p *pattern) updateBullets(screen *ebiten.Image, hb hitBox, pl *player) {
 }
 
 func (p *pattern) getAimLine(hb hitBox, pl *player) (alpha float64) {
-	alpha = math.Atan2(pl.posX()-hb.x, pl.posY()-hb.y)
+	alpha = math.Atan2(pl.centreX()-hb.centreX(), pl.centreY()-hb.centreY())
 	return
 }
 
@@ -55,8 +55,8 @@ func (p *pattern) spawn(hb hitBox) {
 	if indices := findNFirsts(p.bullets, p.opts.bulletStreams, func(b bullet) bool { return !b.isOnScreen }); len(indices) == p.opts.bulletStreams {
 		for i := range indices {
 			angleDeg := -p.opts.bulletSpread/2 + float64(i)*p.opts.bulletSpread/float64(p.opts.bulletStreams-1)
-			p.bullets[indices[i]].x = hb.x + p.opts.bulletSpawnOffset*math.Sin(angleDeg*math.Pi/180) + (hb.xSize-float64(p.opts.bulletSize))/2
-			p.bullets[indices[i]].y = hb.y + p.opts.bulletSpawnOffset*math.Cos(angleDeg*math.Pi/180) + (hb.ySize-float64(p.opts.bulletSize))/2
+			p.bullets[indices[i]].x = -float64(p.opts.bulletSize)/2 + hb.centreX() + p.opts.bulletSpawnOffset*math.Sin(angleDeg*math.Pi/180)
+			p.bullets[indices[i]].y = -float64(p.opts.bulletSize)/2 + hb.centreY() + p.opts.bulletSpawnOffset*math.Cos(angleDeg*math.Pi/180)
 			p.bullets[indices[i]].vx = math.Sin(angleDeg * math.Pi / 180)
 			p.bullets[indices[i]].vy = math.Cos(angleDeg * math.Pi / 180)
 			p.bullets[indices[i]].isOnScreen = true

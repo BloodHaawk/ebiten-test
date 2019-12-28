@@ -22,6 +22,13 @@ func (b *bullet) sizeY() float64 {
 	return float64(b.ySize)
 }
 
+func (b *bullet) centreX() float64 {
+	return b.x + float64(b.xSize)/2
+}
+func (b *bullet) centreY() float64 {
+	return b.y + float64(b.ySize)/2
+}
+
 func (b *bullet) move(speed, size float64) {
 	b.x = b.x + speed*b.vx
 	b.y = b.y + speed*b.vy

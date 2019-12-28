@@ -45,6 +45,13 @@ func (p *player) sizeY() float64 {
 	return float64(p.hitBoxSize)
 }
 
+func (p *player) centreX() float64 {
+	return p.hitBox.x() + float64(p.hitBoxSize)/2
+}
+func (p *player) centreY() float64 {
+	return p.hitBox.y() + float64(p.hitBoxSize)/2
+}
+
 func (p *player) update(screen *ebiten.Image) {
 	p.move(p.mvtSpeed)
 
@@ -141,8 +148,8 @@ func (p *player) shootBullets(freq int, n int, spreadDeg float64) {
 		if len(indices) == n {
 			for i := 0; i < n; i++ {
 				angleDeg := -spreadDeg/2 + float64(i)*spreadDeg/float64(n-1)
-				p.bullets[indices[i]].x = p.hitBox.x() + p.bulletSpawnOffset*math.Sin(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
-				p.bullets[indices[i]].y = p.hitBox.y() - p.bulletSpawnOffset*math.Cos(angleDeg*math.Pi/180) + float64(p.hitBoxSize-p.bulletSize)/2
+				p.bullets[indices[i]].x = -float64(p.bulletSize)/2 + p.centreX() + p.bulletSpawnOffset*math.Sin(angleDeg*math.Pi/180)
+				p.bullets[indices[i]].y = -float64(p.bulletSize)/2 + p.centreY() - p.bulletSpawnOffset*math.Cos(angleDeg*math.Pi/180)
 				if p.isFocus {
 					p.bullets[indices[i]].vx = 0
 					p.bullets[indices[i]].vy = -1

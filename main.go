@@ -40,6 +40,13 @@ type hitBox struct {
 	x, y, xSize, ySize float64
 }
 
+func (hb *hitBox) centreX() float64 {
+	return hb.x + hb.xSize/2
+}
+func (hb *hitBox) centreY() float64 {
+	return hb.y + hb.ySize/2
+}
+
 var frameCounter int
 
 // Display the square
