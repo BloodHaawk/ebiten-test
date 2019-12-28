@@ -14,6 +14,8 @@ type enemy struct {
 	pattern       pattern
 	lastShotFrame int
 
+	vx, vy float64
+
 	skinSize int
 	mvtSpeed float64
 
@@ -27,6 +29,12 @@ func (e *enemy) posX() float64 {
 }
 func (e *enemy) posY() float64 {
 	return e.hitBox.y
+}
+func (e *enemy) vX() float64 {
+	return e.vx
+}
+func (e *enemy) vY() float64 {
+	return e.vy
 }
 func (e *enemy) sizeX() float64 {
 	return float64(e.hitBox.xSize)
@@ -65,6 +73,9 @@ func (e *enemy) move(speed float64) {
 	e.skin.opts.GeoM.Translate(tx, ty)
 	e.hitBox.x += tx
 	e.hitBox.y += ty
+
+	e.vx = tx
+	e.vy = ty
 
 	return
 }
@@ -107,7 +118,9 @@ func initEnemy(
 		skin,
 		hitBox,
 		pattern,
-		0,
+		0, // lastShotFrame
+
+		0, 0, // Initialise at 0 speed
 
 		skinSize,
 		mvtSpeed,
