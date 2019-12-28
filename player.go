@@ -65,9 +65,9 @@ func (p *player) update(screen *ebiten.Image) {
 func (p *player) updateBullets(screen *ebiten.Image, e []enemy) {
 	if ebiten.IsKeyPressed(keyMap[keyConfig["shoot"]]) || ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["shoot"]]) {
 		if p.isFocus {
-			p.shootBullet(p.bulletFreq, p.bulletStreams, p.focusBulletSpread)
+			p.shootBullets(p.bulletFreq, p.bulletStreams, p.focusBulletSpread)
 		} else {
-			p.shootBullet(p.bulletFreq, p.bulletStreams, p.baseBulletSpread)
+			p.shootBullets(p.bulletFreq, p.bulletStreams, p.baseBulletSpread)
 		}
 	}
 
@@ -133,7 +133,7 @@ func (p *player) move(speed float64) {
 	return
 }
 
-func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
+func (p *player) shootBullets(freq int, n int, spreadDeg float64) {
 
 	if frameCounter-p.lastShotFrame >= ebiten.MaxTPS()/p.bulletFreq {
 		indices := findNFirsts(p.bullets, n, func(b bullet) bool { return !b.isOnScreen })
@@ -161,39 +161,68 @@ func (p *player) shootBullet(freq int, n int, spreadDeg float64) {
 }
 
 func initPlayer() player {
-	var p player
+	var (
+		skinSize          int     = 32
+		hitBoxSize        int     = 8
+		mvtSpeed          float64 = 8
+		bulletSize        int     = 12
+		bulletSpeed       float64 = 20
+		bulletFreq        int     = 60
+		baseBulletSpread  float64 = 100 //degrees
+		focusBulletSpread float64 = 90  //degrees
+		bulletStreams     int     = 9
+		bulletSpawnOffset float64 = 60
+	)
 
-	p.skinSize = 32
-	p.hitBoxSize = 8
-	p.mvtSpeed = 8
-	p.bulletSize = 12
-	p.bulletSpeed = 20
-	p.bulletFreq = 60
-	p.baseBulletSpread = 100 //degrees
-	p.focusBulletSpread = 90 //degrees
-	p.bulletStreams = 9
-	p.bulletSpawnOffset = 60
-
-	var errH, errS, errB error
-	p.hitBox.image, errH = ebiten.NewImage(p.hitBoxSize, p.hitBoxSize, ebiten.FilterNearest)
-	p.skin.image, errS = ebiten.NewImage(p.skinSize, p.skinSize, ebiten.FilterNearest)
-	logError(errH)
+	skinImage, errS := ebiten.NewImage(skinSize, skinSize, ebiten.FilterNearest)
 	logError(errS)
+	skinImage.Fill(color.White)
+	skinOpts := ebiten.DrawImageOptions{}
+	skinOpts.GeoM.Translate(float64(hitBoxSize-skinSize)/2, float64(hitBoxSize-skinSize)/2)
+	skinOpts.GeoM.Translate((windowWidth-float64(hitBoxSize))/2, (windowHeight-float64(hitBoxSize))/2)
 
-	p.hitBox.image.Fill(color.RGBA{255, 0, 0, 255})
-	p.skin.image.Fill(color.White)
-	p.skin.opts.GeoM.Translate(float64(p.hitBoxSize-p.skinSize)/2, float64(p.hitBoxSize-p.skinSize)/2)
+	skin := sprite{
+		skinImage,
+		skinOpts,
+	}
 
-	// Start at middle of screen
-	p.hitBox.opts.GeoM.Translate((windowWidth-float64(p.hitBoxSize))/2, (windowHeight-float64(p.hitBoxSize))/2)
-	p.skin.opts.GeoM.Translate((windowWidth-float64(p.hitBoxSize))/2, (windowHeight-float64(p.hitBoxSize))/2)
+	hitBoxImage, errH := ebiten.NewImage(hitBoxSize, hitBoxSize, ebiten.FilterNearest)
+	logError(errH)
+	hitBoxImage.Fill(color.RGBA{255, 0, 0, 255})
+	hitBoxOpts := ebiten.DrawImageOptions{}
+	hitBoxOpts.GeoM.Translate((windowWidth-float64(hitBoxSize))/2, (windowHeight-float64(hitBoxSize))/2)
 
-	p.bulletSkin, errB = ebiten.NewImage(p.bulletSize, p.bulletSize, ebiten.FilterNearest)
+	hitBox := sprite{
+		hitBoxImage,
+		hitBoxOpts,
+	}
+
+	bullets := make([]bullet, maxBullets)
+
+	bulletSkin, errB := ebiten.NewImage(bulletSize, bulletSize, ebiten.FilterNearest)
 	logError(errB)
-	p.bulletSkin.Fill(color.White)
-	p.bulletSprite = sprite{p.bulletSkin, ebiten.DrawImageOptions{}}
+	bulletSkin.Fill(color.White)
+	bulletSprite := sprite{bulletSkin, ebiten.DrawImageOptions{}}
 
-	p.bullets = make([]bullet, maxBullets)
+	return player{
+		skin,
+		hitBox,
+		bullets,
+		bulletSkin,
+		bulletSprite,
+		0,     // lastShotFrame
+		false, // isFocus
 
-	return p
+		skinSize,
+		hitBoxSize,
+		mvtSpeed,
+
+		bulletSize,
+		bulletSpeed,
+		bulletFreq,
+		baseBulletSpread,
+		focusBulletSpread,
+		bulletStreams,
+		bulletSpawnOffset,
+	}
 }
