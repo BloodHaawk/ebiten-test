@@ -88,7 +88,7 @@ func staticCollision(c1, c2 collisionBox) bool {
 
 func dynamicCollision(c1, c2 collisionBox) bool {
 	var quad1, quad2 [4]vertex
-	if c1.vX()*c1.vY() >= 0 {
+	if c1.vX()*c1.vY() < 0 {
 		quad1 = [4]vertex{
 			vertex{c1.posX(), c1.posY()},
 			vertex{c1.posX() + c1.sizeX(), c1.posY() + c1.sizeY()},
@@ -103,7 +103,7 @@ func dynamicCollision(c1, c2 collisionBox) bool {
 			vertex{c1.posX() + c1.vX(), c1.posY() + c1.sizeY() + c1.vY()},
 		}
 	}
-	if c2.vX()*c2.vY() >= 0 {
+	if c2.vX()*c2.vY() < 0 {
 		quad2 = [4]vertex{
 			vertex{c2.posX(), c2.posY()},
 			vertex{c2.posX() + c2.sizeX(), c2.posY() + c2.sizeY()},
