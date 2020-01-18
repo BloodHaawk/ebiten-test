@@ -1,20 +1,23 @@
-package main
+package controlmap
 
 import (
 	"github.com/hajimehoshi/ebiten"
+
+	"github.com/bloodhaawk/shmup-1/utils"
 )
 
-func makeButtonConfig() map[string]string {
+// MakeButtonConfig creates a buttonconfig map
+func MakeButtonConfig() map[string]string {
 	config := make(map[string]string, 0)
 
-	getConfig("configs/button_config_template", &config) // use defaults
-	getConfig("configs/button_config", &config)          // use user-defined
+	utils.GetConfig("configs/button_config_template", &config) // use defaults
+	utils.GetConfig("configs/button_config", &config)          // use user-defined
 
 	return config
 }
 
-// Gamepad mapping
-var buttonMap = map[string]ebiten.GamepadButton{
+// ButtonMap is a gamepad mapping
+var ButtonMap = map[string]ebiten.GamepadButton{
 	"Button0":  ebiten.GamepadButton0,
 	"Button1":  ebiten.GamepadButton1,
 	"Button2":  ebiten.GamepadButton2,

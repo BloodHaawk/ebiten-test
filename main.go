@@ -5,6 +5,9 @@ import (
 	"os"
 
 	"github.com/hajimehoshi/ebiten"
+
+	"github.com/bloodhaawk/shmup-1/controlmap"
+	"github.com/bloodhaawk/shmup-1/utils"
 )
 
 const (
@@ -61,11 +64,11 @@ func update(screen *ebiten.Image, p *player, e []enemy) error {
 		e[i].pattern.updateBullets(screen, e[i].hitBox, p)
 	}
 
-	printFPS(screen)
+	utils.PrintFPS(screen)
 
 	frameCounter++
 
-	if ebiten.IsKeyPressed(keyMap[keyConfig["quit"]]) || ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["quit"]]) {
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["quit"]]) || ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["quit"]]) {
 		os.Exit(0)
 	}
 
@@ -78,12 +81,12 @@ func drawSprite(screen *ebiten.Image, spr sprite) {
 
 // Initialise Ebiten, then loop the update function
 func main() {
-	config = makeConfig()
-	setGamepadID(config)
-	setDeadZone(config)
+	config = utils.MakeConfig()
+	gamepadID = utils.ReadGamepadID(config)
+	deadZone = utils.ReadDeadZone(config)
 
-	keyConfig = makeKeyConfig()
-	buttonConfig = makeButtonConfig()
+	keyConfig = controlmap.MakeKeyConfig()
+	buttonConfig = controlmap.MakeButtonConfig()
 
 	p := initPlayer()
 
@@ -98,7 +101,7 @@ func main() {
 	)
 
 	bulletSkin, errB := ebiten.NewImage(bulletSize, bulletSize, ebiten.FilterNearest)
-	logError(errB)
+	utils.LogError(errB)
 	bulletSkin.Fill(bulletColor)
 	bulletSprite := sprite{bulletSkin, ebiten.DrawImageOptions{}}
 

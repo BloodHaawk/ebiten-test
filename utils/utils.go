@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"bufio"
@@ -11,18 +11,21 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
-func logError(err error) {
+// LogError prints an error and exits
+func LogError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func printFPS(screen *ebiten.Image) {
+// PrintFPS prints the current TPS and FPS values
+func PrintFPS(screen *ebiten.Image) {
 	msg := fmt.Sprintf("TPS: %0.2f\nFPS: %0.2f", ebiten.CurrentTPS(), ebiten.CurrentFPS())
 	ebitenutil.DebugPrint(screen, msg)
 }
 
-func getConfig(configFile string, config *map[string]string) {
+// GetConfig reads a config file and returns a new config map
+func GetConfig(configFile string, config *map[string]string) {
 	file, err := os.Open(configFile)
 	if err != nil {
 		return
@@ -36,6 +39,6 @@ func getConfig(configFile string, config *map[string]string) {
 			(*config)[strings.TrimSpace(kv[0])] = strings.TrimSpace(kv[1])
 		}
 	}
-	logError(scanner.Err())
+	LogError(scanner.Err())
 	return
 }

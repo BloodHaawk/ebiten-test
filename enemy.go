@@ -4,6 +4,7 @@ import (
 	"image/color"
 	"math"
 
+	"github.com/bloodhaawk/shmup-1/utils"
 	"github.com/hajimehoshi/ebiten"
 )
 
@@ -99,7 +100,7 @@ func initEnemy(
 	pattOpts patternOpts) enemy {
 
 	skinImage, errS := ebiten.NewImage(skinSize, skinSize, ebiten.FilterNearest)
-	logError(errS)
+	utils.LogError(errS)
 	skinImage.Fill(clr)
 	skinOpts := ebiten.DrawImageOptions{}
 	skinOpts.GeoM.Translate((hitBoxSizeX-float64(skinSize))/2, (hitBoxSizeY-float64(skinSize))/2)

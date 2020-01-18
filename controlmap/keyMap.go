@@ -1,20 +1,23 @@
-package main
+package controlmap
 
 import (
 	"github.com/hajimehoshi/ebiten"
+
+	"github.com/bloodhaawk/shmup-1/utils"
 )
 
-func makeKeyConfig() map[string]string {
+// MakeKeyConfig creates a keyconfig map
+func MakeKeyConfig() map[string]string {
 	config := make(map[string]string, 0)
 
-	getConfig("configs/key_config_template", &config) // use defaults
-	getConfig("configs/key_config", &config)          // use user-defined
+	utils.GetConfig("configs/key_config_template", &config) // use defaults
+	utils.GetConfig("configs/key_config", &config)          // use user-defined
 
 	return config
 }
 
-// US keyboard mapping
-var keyMap = map[string]ebiten.Key{
+// KeyMap is a US keyboard mapping
+var KeyMap = map[string]ebiten.Key{
 	"0":            ebiten.Key0,
 	"1":            ebiten.Key1,
 	"2":            ebiten.Key2,

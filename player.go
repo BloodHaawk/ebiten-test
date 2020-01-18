@@ -7,6 +7,8 @@ import (
 	"github.com/hajimehoshi/ebiten"
 
 	"github.com/bloodhaawk/shmup-1/collision"
+	"github.com/bloodhaawk/shmup-1/controlmap"
+	"github.com/bloodhaawk/shmup-1/utils"
 )
 
 // Player struct
@@ -69,7 +71,7 @@ func (p *player) update(screen *ebiten.Image) {
 	drawSprite(screen, p.skin)
 
 	// Show the hitBox in red when pressing focus
-	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) || ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["focus"]]) {
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["focus"]]) || ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["focus"]]) {
 		drawSprite(screen, p.hitBox)
 		p.isFocus = true
 	} else {
@@ -80,7 +82,7 @@ func (p *player) update(screen *ebiten.Image) {
 
 // Update player bullets
 func (p *player) updateBullets(screen *ebiten.Image, e []enemy) {
-	if ebiten.IsKeyPressed(keyMap[keyConfig["shoot"]]) || ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["shoot"]]) {
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["shoot"]]) || ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["shoot"]]) {
 		if p.isFocus {
 			p.shootBullets(p.bulletFreq, p.bulletStreams, p.focusBulletSpread)
 		} else {
@@ -107,28 +109,28 @@ func (p *player) updateBullets(screen *ebiten.Image, e []enemy) {
 // Move a sprite from keyboard inputs (use Shift to slow down)
 func (p *player) move(speed float64) {
 	// Use Shift to slow down
-	if ebiten.IsKeyPressed(keyMap[keyConfig["focus"]]) || ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["focus"]]) {
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["focus"]]) || ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["focus"]]) {
 		speed /= 2
 	}
 	var tx, ty float64
 
-	if ebiten.IsKeyPressed(keyMap[keyConfig["right"]]) ||
-		ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["right"]]) ||
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["right"]]) ||
+		ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["right"]]) ||
 		ebiten.GamepadAxis(gamepadID, 0) > deadZone {
 		tx = 1
 	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["left"]]) ||
-		ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["left"]]) ||
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["left"]]) ||
+		ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["left"]]) ||
 		ebiten.GamepadAxis(gamepadID, 0) < -deadZone {
 		tx = -1
 	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["down"]]) ||
-		ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["down"]]) ||
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["down"]]) ||
+		ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["down"]]) ||
 		ebiten.GamepadAxis(gamepadID, 1) > deadZone {
 		ty = 1
 	}
-	if ebiten.IsKeyPressed(keyMap[keyConfig["up"]]) ||
-		ebiten.IsGamepadButtonPressed(gamepadID, buttonMap[buttonConfig["up"]]) ||
+	if ebiten.IsKeyPressed(controlmap.KeyMap[keyConfig["up"]]) ||
+		ebiten.IsGamepadButtonPressed(gamepadID, controlmap.ButtonMap[buttonConfig["up"]]) ||
 		ebiten.GamepadAxis(gamepadID, 1) < -deadZone {
 		ty = -1
 	}
@@ -200,7 +202,7 @@ func initPlayer() player {
 	)
 
 	skinImage, errS := ebiten.NewImage(skinSize, skinSize, ebiten.FilterNearest)
-	logError(errS)
+	utils.LogError(errS)
 	skinImage.Fill(color.White)
 	skinOpts := ebiten.DrawImageOptions{}
 	skinOpts.GeoM.Translate(float64(hitBoxSize-skinSize)/2, float64(hitBoxSize-skinSize)/2)
@@ -212,7 +214,7 @@ func initPlayer() player {
 	}
 
 	hitBoxImage, errH := ebiten.NewImage(hitBoxSize, hitBoxSize, ebiten.FilterNearest)
-	logError(errH)
+	utils.LogError(errH)
 	hitBoxImage.Fill(color.RGBA{255, 0, 0, 255})
 	hitBoxOpts := ebiten.DrawImageOptions{}
 	hitBoxOpts.GeoM.Translate((windowWidth-float64(hitBoxSize))/2, (windowHeight-float64(hitBoxSize))/2)
@@ -225,7 +227,7 @@ func initPlayer() player {
 	bullets := make([]bullet, maxBullets)
 
 	bulletSkin, errB := ebiten.NewImage(bulletSize, bulletSize, ebiten.FilterNearest)
-	logError(errB)
+	utils.LogError(errB)
 	bulletSkin.Fill(color.White)
 	bulletSprite := sprite{bulletSkin, ebiten.DrawImageOptions{}}
 
