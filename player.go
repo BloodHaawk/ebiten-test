@@ -5,6 +5,8 @@ import (
 	"math"
 
 	"github.com/hajimehoshi/ebiten"
+
+	"github.com/bloodhaawk/shmup-1/collision"
 )
 
 // Player struct
@@ -34,22 +36,22 @@ type player struct {
 
 // Implement collisionBox interface
 
-func (p *player) posX() float64 {
+func (p *player) PosX() float64 {
 	return p.hitBox.x()
 }
-func (p *player) posY() float64 {
+func (p *player) PosY() float64 {
 	return p.hitBox.y()
 }
-func (p *player) vX() float64 {
+func (p *player) VX() float64 {
 	return p.vx
 }
-func (p *player) vY() float64 {
+func (p *player) VY() float64 {
 	return p.vy
 }
-func (p *player) sizeX() float64 {
+func (p *player) SizeX() float64 {
 	return float64(p.hitBoxSize)
 }
-func (p *player) sizeY() float64 {
+func (p *player) SizeY() float64 {
 	return float64(p.hitBoxSize)
 }
 
@@ -92,7 +94,7 @@ func (p *player) updateBullets(screen *ebiten.Image, e []enemy) {
 			p.bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, p.bulletSprite)
 			for j := range e {
-				if collision(&p.bullets[i], &e[j]) {
+				if collision.Collision(&p.bullets[i], &e[j]) {
 					p.bullets[i].isOnScreen = false
 					break
 				}

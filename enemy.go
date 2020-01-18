@@ -24,22 +24,22 @@ type enemy struct {
 
 // Implement collisionBox interface
 
-func (e *enemy) posX() float64 {
+func (e *enemy) PosX() float64 {
 	return e.hitBox.x
 }
-func (e *enemy) posY() float64 {
+func (e *enemy) PosY() float64 {
 	return e.hitBox.y
 }
-func (e *enemy) vX() float64 {
+func (e *enemy) VX() float64 {
 	return e.vx
 }
-func (e *enemy) vY() float64 {
+func (e *enemy) VY() float64 {
 	return e.vy
 }
-func (e *enemy) sizeX() float64 {
+func (e *enemy) SizeX() float64 {
 	return float64(e.hitBox.xSize)
 }
-func (e *enemy) sizeY() float64 {
+func (e *enemy) SizeY() float64 {
 	return float64(e.hitBox.ySize)
 }
 

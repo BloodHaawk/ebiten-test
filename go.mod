@@ -1,4 +1,4 @@
-module github.com/bloodhaawk/ebiten-test
+module github.com/bloodhaawk/shmup-1
 
 go 1.13
 

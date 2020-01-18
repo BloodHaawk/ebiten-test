@@ -5,6 +5,8 @@ import (
 	"math"
 
 	"github.com/hajimehoshi/ebiten"
+
+	"github.com/bloodhaawk/shmup-1/collision"
 )
 
 type pattern struct {
@@ -35,7 +37,7 @@ func (p *pattern) updateBullets(screen *ebiten.Image, hb hitBox, pl *player) {
 			p.opts.bulletSprite.opts.GeoM.Reset()
 			p.opts.bulletSprite.opts.GeoM.Translate(p.bullets[i].x, p.bullets[i].y)
 			drawSprite(screen, p.opts.bulletSprite)
-			if collision(pl, &p.bullets[i]) {
+			if collision.Collision(pl, &p.bullets[i]) {
 				p.bullets[i].isOnScreen = false
 				screen.Fill(color.RGBA{255, 0, 0, 255})
 			}

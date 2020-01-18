@@ -1,14 +1,14 @@
-package main
+package collision
 
 import "math"
 
 type collisionBox interface {
-	posX() float64
-	posY() float64
-	vX() float64
-	vY() float64
-	sizeX() float64
-	sizeY() float64
+	PosX() float64
+	PosY() float64
+	VX() float64
+	VY() float64
+	SizeX() float64
+	SizeY() float64
 }
 
 type vertex struct {
@@ -78,50 +78,51 @@ func quadrangleCollision(v1a, v1b, v1c, v1d, v2a, v2b, v2c, v2d vertex) bool {
 }
 
 func staticCollision(c1, c2 collisionBox) bool {
-	x1In := c2.posX() <= c1.posX() && c1.posX() < c2.posX()+c2.sizeX()
-	x2In := c1.posX() <= c2.posX() && c2.posX() < c1.posX()+c1.sizeX()
-	y1In := c2.posY() <= c1.posY() && c1.posY() < c2.posY()+c2.sizeY()
-	y2In := c1.posY() <= c2.posY() && c2.posY() < c1.posY()+c1.sizeY()
+	x1In := c2.PosX() <= c1.PosX() && c1.PosX() < c2.PosX()+c2.SizeX()
+	x2In := c1.PosX() <= c2.PosX() && c2.PosX() < c1.PosX()+c1.SizeX()
+	y1In := c2.PosY() <= c1.PosY() && c1.PosY() < c2.PosY()+c2.SizeY()
+	y2In := c1.PosY() <= c2.PosY() && c2.PosY() < c1.PosY()+c1.SizeY()
 
 	return (x1In || x2In) && (y1In || y2In)
 }
 
 func dynamicCollision(c1, c2 collisionBox) bool {
 	var quad1, quad2 [4]vertex
-	if c1.vX()*c1.vY() < 0 {
+	if c1.VX()*c1.VY() < 0 {
 		quad1 = [4]vertex{
-			vertex{c1.posX(), c1.posY()},
-			vertex{c1.posX() + c1.sizeX(), c1.posY() + c1.sizeY()},
-			vertex{c1.posX() + c1.sizeX() + c1.vX(), c1.posY() + c1.sizeY() + c1.vY()},
-			vertex{c1.posX() + c1.vX(), c1.posY() + c1.vY()},
+			vertex{c1.PosX(), c1.PosY()},
+			vertex{c1.PosX() + c1.SizeX(), c1.PosY() + c1.SizeY()},
+			vertex{c1.PosX() + c1.SizeX() + c1.VX(), c1.PosY() + c1.SizeY() + c1.VY()},
+			vertex{c1.PosX() + c1.VX(), c1.PosY() + c1.VY()},
 		}
 	} else {
 		quad1 = [4]vertex{
-			vertex{c1.posX(), c1.posY() + c1.sizeY()},
-			vertex{c1.posX() + c1.sizeX(), c1.posY()},
-			vertex{c1.posX() + c1.sizeX() + c1.vX(), c1.posY() + c1.vY()},
-			vertex{c1.posX() + c1.vX(), c1.posY() + c1.sizeY() + c1.vY()},
+			vertex{c1.PosX(), c1.PosY() + c1.SizeY()},
+			vertex{c1.PosX() + c1.SizeX(), c1.PosY()},
+			vertex{c1.PosX() + c1.SizeX() + c1.VX(), c1.PosY() + c1.VY()},
+			vertex{c1.PosX() + c1.VX(), c1.PosY() + c1.SizeY() + c1.VY()},
 		}
 	}
-	if c2.vX()*c2.vY() < 0 {
+	if c2.VX()*c2.VY() < 0 {
 		quad2 = [4]vertex{
-			vertex{c2.posX(), c2.posY()},
-			vertex{c2.posX() + c2.sizeX(), c2.posY() + c2.sizeY()},
-			vertex{c2.posX() + c2.sizeX() + c2.vX(), c2.posY() + c2.sizeY() + c2.vY()},
-			vertex{c2.posX() + c2.vX(), c2.posY() + c2.vY()},
+			vertex{c2.PosX(), c2.PosY()},
+			vertex{c2.PosX() + c2.SizeX(), c2.PosY() + c2.SizeY()},
+			vertex{c2.PosX() + c2.SizeX() + c2.VX(), c2.PosY() + c2.SizeY() + c2.VY()},
+			vertex{c2.PosX() + c2.VX(), c2.PosY() + c2.VY()},
 		}
 	} else {
 		quad2 = [4]vertex{
-			vertex{c2.posX(), c2.posY() + c2.sizeY()},
-			vertex{c2.posX() + c2.sizeX(), c2.posY()},
-			vertex{c2.posX() + c2.sizeX() + c2.vX(), c2.posY() + c2.vY()},
-			vertex{c2.posX() + c2.vX(), c2.posY() + c2.sizeY() + c2.vY()},
+			vertex{c2.PosX(), c2.PosY() + c2.SizeY()},
+			vertex{c2.PosX() + c2.SizeX(), c2.PosY()},
+			vertex{c2.PosX() + c2.SizeX() + c2.VX(), c2.PosY() + c2.VY()},
+			vertex{c2.PosX() + c2.VX(), c2.PosY() + c2.SizeY() + c2.VY()},
 		}
 
 	}
 	return quadrangleCollision(quad1[0], quad1[1], quad1[2], quad1[3], quad2[0], quad2[1], quad2[2], quad2[3])
 }
 
-func collision(c1, c2 collisionBox) bool {
+// Collision returns true if two collisionBoxes are colliding
+func Collision(c1, c2 collisionBox) bool {
 	return staticCollision(c1, c2) || dynamicCollision(c1, c2)
 }

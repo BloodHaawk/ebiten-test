@@ -9,22 +9,22 @@ type bullet struct {
 
 // Implement collisionBox
 
-func (b *bullet) posX() float64 {
+func (b *bullet) PosX() float64 {
 	return b.x
 }
-func (b *bullet) posY() float64 {
+func (b *bullet) PosY() float64 {
 	return b.y
 }
-func (b *bullet) vX() float64 {
+func (b *bullet) VX() float64 {
 	return b.vx
 }
-func (b *bullet) vY() float64 {
+func (b *bullet) VY() float64 {
 	return b.vy
 }
-func (b *bullet) sizeX() float64 {
+func (b *bullet) SizeX() float64 {
 	return float64(b.xSize)
 }
-func (b *bullet) sizeY() float64 {
+func (b *bullet) SizeY() float64 {
 	return float64(b.ySize)
 }
 

@@ -1,4 +1,4 @@
-package main
+package collision
 
 import (
 	"testing"
@@ -10,22 +10,22 @@ type mockCollisionBox struct {
 	x, y, vx, vy, xSize, ySize float64
 }
 
-func (c mockCollisionBox) posX() float64 {
+func (c mockCollisionBox) PosX() float64 {
 	return c.x
 }
-func (c mockCollisionBox) posY() float64 {
+func (c mockCollisionBox) PosY() float64 {
 	return c.y
 }
-func (c mockCollisionBox) vX() float64 {
+func (c mockCollisionBox) VX() float64 {
 	return c.vx
 }
-func (c mockCollisionBox) vY() float64 {
+func (c mockCollisionBox) VY() float64 {
 	return c.vy
 }
-func (c mockCollisionBox) sizeX() float64 {
+func (c mockCollisionBox) SizeX() float64 {
 	return c.xSize
 }
-func (c mockCollisionBox) sizeY() float64 {
+func (c mockCollisionBox) SizeY() float64 {
 	return c.ySize
 }
 
